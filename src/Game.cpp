@@ -84,19 +84,43 @@ void Game::run(GLFWwindow* window, ShaderProgram *pointer)
 
 
     SOCKET socket = getConnectionSocket("192.168.0.15");
+    string index_string = getInfoFromServer(); //0 lub 1
+    int index = index_string - '0'; //0 lub 1
+
 //Pêtla g³ówna gry
 //----------------------------------------------------------------------------------------------------------------------
+string msg;
+string msg2;
 	while (!glfwWindowShouldClose(window)) //Tak d³ugo jak okno nie powinno zostaæ zamkniête
 	{
 
         glfwSetTime(0); //Zeruj timer
 		drawScene(window, V, P, cube,track, player, tree, enemy); //Wykonaj procedurê rysuj¹c¹
-        moving(V, player);                                   //wykonaj procedurê odpowiajaj¹ca za poruszanie graczem oraz kamer¹
-        game(cube,track, player, tree, enemy);               //wykonaj procedurê odpowiedzialn¹ za logikê gry
+  //      moving(V, player);  
+        setCamera(V, player);                                 //wykonaj procedurê odpowiajaj¹ca za poruszanie graczem oraz kamer¹
+ //       game(cube,track, player, tree, enemy);               //wykonaj procedurê odpowiedzialn¹ za logikê gry
+        sendKeyInfoToServer(socket);
+        msg = getInfoFromServer(socket);    //info o player 0
+        msg2=getInfoFromServer(socket); //info o player 1
+        //TODO
+            //wyciagnij informacje z msg
+            //wyciagnij informacje z msg2
+        if (index == 0 )
+        {
+            //TODO  
+            //info z msg dotycza player, a z msg2 dotycza enemy
+
+        } else
+        {
+            //TODO
+            //info z msg dotycza enemy, a z msg2 dotycza player
+            
+        }
+        
+        //game(msg);
 		glfwPollEvents();                                    //Wykonaj procedury callback w zaleznoœci od zdarzeñ jakie zasz³y.
 		while(glfwGetTime() < 1/FPS) {}                      //Zapewnij sta³e 60FPS
-		sendKeyInfoToServer(socket);
-        getInfoFromServer(socket);
+
 	}
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -199,7 +223,7 @@ void Game::moving(mat4 &V,  Car &player)
     {
         if (turnLeft)   //i jednoczesnie A
         {
-            player.turnLeft();    //skrec gracza
+ //           player.turnLeft();    //skrec gracza
             if ( angle_around_player >= -max_angle)  //skrec kamere
             {
                 if ( speed_angle == 0)
@@ -209,7 +233,7 @@ void Game::moving(mat4 &V,  Car &player)
         } else
 	    if (turnRight) //i jednoczesnie D
         {
-            player.turnRight();   //skrec gracza
+  //          player.turnRight();   //skrec gracza
             if (angle_around_player <= max_angle)    //skrec kamere
             {
                 if ( speed_angle == 0)
@@ -222,7 +246,7 @@ void Game::moving(mat4 &V,  Car &player)
     {
         if (turnLeft)   //i jednoczesnie A
         {
-            player.turnRight();   //skrec gracza
+ //           player.turnRight();   //skrec gracza
             if (angle_around_player < max_angle)    //skrec kamere
             {
                 if ( speed_angle == 0)
@@ -232,7 +256,7 @@ void Game::moving(mat4 &V,  Car &player)
         } else
         if (turnRight)  //i jednoczesnie D
         {
-            player.turnLeft();
+ //           player.turnLeft();
             if ( angle_around_player > -max_angle)  //skrec kamere
             {
                 if ( speed_angle == 0)
@@ -241,7 +265,6 @@ void Game::moving(mat4 &V,  Car &player)
         camera_back = false;
         }
     }
-
 
          if (camera_back)
         {
@@ -260,37 +283,37 @@ void Game::moving(mat4 &V,  Car &player)
             angle_around_player +=speed_angle;
 
 
-        if (turnLeft)
-        {
-            player.turnWheelLeft();
-        }
-        if (turnRight)
-        {
-            player.turnWheelRight();
-        }
-        if (!turnLeft && !turnRight)  //prostuj ko³a
-        {
-            if (player.getWheelRotation() > 0)
-            {
-                player.turnWheelRight();
-            }
-            if (player.getWheelRotation() < 0)
-            {
-                player.turnWheelLeft();
-            }
-        }
+//         if (turnLeft)
+//         {
+// //            player.turnWheelLeft();
+//         }
+//         if (turnRight)
+//         {
+//  //           player.turnWheelRight();
+//         }
+//         if (!turnLeft && !turnRight)  //prostuj ko³a
+//         {
+//             if (player.getWheelRotation() > 0)
+//             {
+//                 player.turnWheelRight();
+//             }
+//             if (player.getWheelRotation() < 0)
+//             {
+//                 player.turnWheelLeft();
+//             }
+//         }
 
-     if (goPlayer)       //jesli trzyma W
-    {
-        player.move(1);  //rusz gracza
-    } else
-    if (backPlayer)     //jesli trzyma S
-    {
-        player.move(2);
-    } else
-    {
-        player.move(0);
-    }
+//      if (goPlayer)       //jesli trzyma W
+//     {
+//         player.move(1);  //rusz gracza
+//     } else
+//     if (backPlayer)     //jesli trzyma S
+//     {
+//         player.move(2);
+//     } else
+//     {
+//         player.move(0);
+//     }
 
 
 
@@ -379,7 +402,7 @@ void Game::sendKeyInfoToServer(SOCKET ConnectSocket){
     iResult = send( ConnectSocket,msg.c_str(), (int)strlen(msg.c_str()), 0 );
 }
 
-void Game::getInfoFromServer(SOCKET ConnectSocket){
+string Game::getInfoFromServer(SOCKET ConnectSocket){
     char* msg = new char[256];
     char recvbuf;
     recv(ConnectSocket, &recvbuf, 1, 0);
@@ -391,30 +414,32 @@ void Game::getInfoFromServer(SOCKET ConnectSocket){
         i++;
     }
     cout << msg;
+    string result(msg);
+    return result;
 }
 
-void Game::game( Object &cube, Object &track,Car &player,Object tree[amount_of_trees], Car &enemy)
+void Game::game( string msg)//Object &cube, Object &track,Car &player,Object tree[amount_of_trees], Car &enemy)
 {
-    enemy.AI();
-    player.checkpointReached();
-    for(int i = 0 ; i < amount_of_trees; i++)   //kolizja z drzewami
-    {
-        if ( collision(player, tree[i])   )
-        {
-            player.setV(-0.2);
-        }
-    }
-    float help;
-    if ( collision(player, *enemy.getBody() )  ) //kolizja gracza z enemy
-    {
-        help = player.getV();
-        player.setV( enemy.getV() );
-        enemy.setV(help);
-    }
+    // enemy.AI();
+    // player.checkpointReached();
+    // for(int i = 0 ; i < amount_of_trees; i++)   //kolizja z drzewami
+    // {
+    //     if ( collision(player, tree[i])   )
+    //     {
+    //         player.setV(-0.2);
+    //     }
+    // }
+    // float help;
+    // if ( collision(player, *enemy.getBody() )  ) //kolizja gracza z enemy
+    // {
+    //     help = player.getV();
+    //     player.setV( enemy.getV() );
+    //     enemy.setV(help);
+    // }
 
-    if (abs(player.getPosition().x) >= 70 || abs(player.getPosition().z) >= 125)
-    {
-        player.setV(-0.75);
-    }
+    // if (abs(player.getPosition().x) >= 70 || abs(player.getPosition().z) >= 125)
+    // {
+    //     player.setV(-0.75);
+    // }
 }
 
