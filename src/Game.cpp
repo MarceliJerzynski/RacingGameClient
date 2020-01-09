@@ -1,22 +1,20 @@
 #include "Game.h"
 
 #define DEFAULT_BUFLEN 512
-#define DEFAULT_PORT "27015"
-#include <iostream>
-
-using namespace std;
+#define DEFAULT_PORT "50053"
 
 string * split(string text)
 {
-    static string result[2];
+    static string result[5];
     istringstream stm(text);
     string word ;
-    int i = 0;
-    while( stm >> word ) // read white-space delimited tokens one by one 
+    //int i = 0;
+    for(int i = 0; i < 5; i++)
     {
-        result[i++] = word;
+        stm >> word;
+        result[i] = word;
     }
-    
+
     return result;
 }
 
@@ -56,6 +54,7 @@ void Game::keyCallback(GLFWwindow* window,int key,int scancode,int action,int mo
 void Game::run(GLFWwindow* window, ShaderProgram *pointer)
 {
 
+
     sp = pointer;
 //Tworzenie obiektów
 //----------------------------------------------------------------------------------------------------------------------
@@ -66,11 +65,15 @@ void Game::run(GLFWwindow* window, ShaderProgram *pointer)
     cube.loadFromPath("models/cube.obj","img/Grass.png", vec3(0.0f,-102.0f,0.0f), -90.0f, 0.0f, 0.0f, 200.0f);
 
     Car enemy;
-    enemy.loadFromPath("models/body.obj","models/chassis.obj","models/headlit.obj","models/license.obj", "models/wheel.obj","img/test.png","img/as3.png","img/s3cos.png","img/license.png","img/texWhee1.png", 0.01,0.05 ,vec3(30.0f,0.0f,0-5.0f), 0.0f,0.0f,0.0f,1.0f);
+    enemy.loadFromPath("models/body.obj","models/chassis.obj","models/headlit.obj",
+                       "models/license.obj", "models/wheel.obj","img/test.png","img/as3.png",
+                       "img/s3cos.png","img/license.png","img/texWhee1.png", 1.0f);
     enemy.getMarkup()->loadMarkup(0.2);
 
     Car player;
-    player.loadFromPath("models/body.obj","models/chassis.obj","models/headlit.obj","models/license.obj", "models/wheel.obj","img/test.png","img/as3.png","img/s3cos.png","img/license.png","img/texWhee1.png", 0.01,0.05 ,vec3(25.0f,0.0f,10.0f), 0.0f,0.0f,0.0f,1.0f);
+    player.loadFromPath("models/body.obj","models/chassis.obj","models/headlit.obj",
+                        "models/license.obj", "models/wheel.obj","img/test.png","img/as3.png",
+                        "img/s3cos.png","img/license.png","img/texWhee1.png",1.0f);
     player.getMarkup()->loadMarkup(0.2);
 
 
@@ -93,47 +96,41 @@ void Game::run(GLFWwindow* window, ShaderProgram *pointer)
 //----------------------------------------------------------------------------------------------------------------------
 
     setCamera(V, player);
-	glfwSetTime(0); //Zeruj timer
 
-
-    SOCKET socket = getConnectionSocket("192.168.0.15");
-    string index_string = getInfoFromServer(); //0 lub 1
-    int index = index_string - '0'; //0 lub 1
+    cout<<"Czekam na socket serwera"<<endl;
+    SOCKET socket = getConnectionSocket("192.168.60.30");
+    cout<<"Czekam na indeks z serwera: "<<endl;
+    string index_string = getInfoFromServer(socket); //0 lub 1
+    int index = atoi(index_string.c_str()); //0 lub 1
+    cout<<"indeks z serwera to: "<<index<<endl;
 
 //Pêtla g³ówna gry
 //----------------------------------------------------------------------------------------------------------------------
 string msg;
 string msg2;
-string *player1 = new string[5];
 	while (!glfwWindowShouldClose(window)) //Tak d³ugo jak okno nie powinno zostaæ zamkniête
 	{
 
         glfwSetTime(0); //Zeruj timer
+
 		drawScene(window, V, P, cube,track, player, tree, enemy); //Wykonaj procedurê rysuj¹c¹
-  //      moving(V, player);  
+  //      moving(V, player);
         setCamera(V, player);                                 //wykonaj procedurê odpowiajaj¹ca za poruszanie graczem oraz kamer¹
  //       game(cube,track, player, tree, enemy);               //wykonaj procedurê odpowiedzialn¹ za logikê gry
         sendKeyInfoToServer(socket);
         msg = getInfoFromServer(socket);    //info o player 0
         msg2=getInfoFromServer(socket); //info o player 1
-        //TODO
-            //wyciagnij informacje z msg
-            //wyciagnij informacje z msg2
-
         if (index == 0 )
         {
-            //TODO  
             //info z msg dotycza player, a z msg2 dotycza enemy
             game(msg, player);
             game(msg2, enemy);
         } else
         {
-            //TODO
             //info z msg dotycza enemy, a z msg2 dotycza player
             game(msg2, player);
             game(msg, enemy);
         }
-
 		glfwPollEvents();                                    //Wykonaj procedury callback w zaleznoœci od zdarzeñ jakie zasz³y.
 		while(glfwGetTime() < 1/FPS) {}                      //Zapewnij sta³e 60FPS
 
@@ -418,6 +415,7 @@ void Game::sendKeyInfoToServer(SOCKET ConnectSocket){
     iResult = send( ConnectSocket,msg.c_str(), (int)strlen(msg.c_str()), 0 );
 }
 
+
 string Game::getInfoFromServer(SOCKET ConnectSocket){
     char* msg = new char[256];
     char recvbuf;
@@ -433,16 +431,12 @@ string Game::getInfoFromServer(SOCKET ConnectSocket){
     return result;
 }
 
+
 void Game::game( string msg, Car& car)//Object &cube, Object &track,Car &player,Object tree[amount_of_trees], Car &enemy)
 {
     string *player1 = new string[5];
 
     player1 = split(msg);
-
-    if (player1[0] == "1")          
-    {
-        car.checkpointReached();
-    }
 
     float rotation = strtof((player1[1]).c_str(),0);
     car.setRotation(0,rotation,0);
@@ -452,7 +446,7 @@ void Game::game( string msg, Car& car)//Object &cube, Object &track,Car &player,
     position.y = strtof((player1[3]).c_str(),0);
     position.z = strtof((player1[4]).c_str(),0);
     car.setPosition(position);
-            
+    delete[] player1;
     // enemy.AI();
     // player.checkpointReached();
     // for(int i = 0 ; i < amount_of_trees; i++)   //kolizja z drzewami

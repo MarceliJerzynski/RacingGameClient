@@ -19,8 +19,9 @@ class Car
 {
     public:
         Car();
-        void loadFromPath(string pathBody,string pathChassis,string pathHeadlit,string pathLicense,string pathWheel, 
-                            string texPathBody,string texPathChassis,string texPathheadlit,string texPathLicense, string texPathWheel,
+        void loadFromPath(string pathBody,string pathChassis,string pathHeadlit,string pathLicense,string pathWheel,
+                            string texPathBody,string texPathChassis,string texPathheadlit,string texPathLicense,
+                            string texPathWheel,
                             float ascale);
         Object * getBody();
         void setV(float av);

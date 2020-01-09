@@ -16,7 +16,9 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <iostream>
+#include <string>
+#include <sstream>
 
 #include <cmath>
 #include <vector>
@@ -53,10 +55,10 @@ class Game
         void setCamera(mat4 &V, Car player);
         void drawScene(GLFWwindow* window,mat4 &V, mat4 &P, Object &cube,Object &track, Car &player, Object tree[amount_of_trees], Car &enemy);
         void moving(mat4 &V,  Car &player);
-        void game( string msg);//Object &cube, Object &track,Car &player,Object tree[amount_of_trees], Car &enemy);
+        void game( string msg, Car &car);//Object &cube, Object &track,Car &player,Object tree[amount_of_trees], Car &enemy);
         SOCKET getConnectionSocket(const char* serverName);
         void sendKeyInfoToServer(SOCKET ConnectSocket);
-        void getInfoFromServer(SOCKET ConnectSocket);
+        string getInfoFromServer(SOCKET ConnectSocket);
         float distance_to_player;
         float pitch_angle;
         float angle_around_player;
