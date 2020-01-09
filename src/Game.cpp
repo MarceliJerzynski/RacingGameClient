@@ -6,6 +6,19 @@
 
 using namespace std;
 
+string * split(string text)
+{
+    static string result[2];
+    istringstream stm(text);
+    string word ;
+    int i = 0;
+    while( stm >> word ) // read white-space delimited tokens one by one 
+    {
+        result[i++] = word;
+    }
+    
+    return result;
+}
 
 Game::Game()
 {
@@ -91,6 +104,7 @@ void Game::run(GLFWwindow* window, ShaderProgram *pointer)
 //----------------------------------------------------------------------------------------------------------------------
 string msg;
 string msg2;
+string *player1 = new string[5];
 	while (!glfwWindowShouldClose(window)) //Tak d³ugo jak okno nie powinno zostaæ zamkniête
 	{
 
@@ -105,19 +119,21 @@ string msg2;
         //TODO
             //wyciagnij informacje z msg
             //wyciagnij informacje z msg2
+
         if (index == 0 )
         {
             //TODO  
             //info z msg dotycza player, a z msg2 dotycza enemy
-
+            game(msg, player);
+            game(msg2, enemy);
         } else
         {
             //TODO
             //info z msg dotycza enemy, a z msg2 dotycza player
-            
+            game(msg2, player);
+            game(msg, enemy);
         }
-        
-        //game(msg);
+
 		glfwPollEvents();                                    //Wykonaj procedury callback w zaleznoœci od zdarzeñ jakie zasz³y.
 		while(glfwGetTime() < 1/FPS) {}                      //Zapewnij sta³e 60FPS
 
@@ -413,13 +429,30 @@ string Game::getInfoFromServer(SOCKET ConnectSocket){
         msg[i] = recvbuf;
         i++;
     }
-    cout << msg;
     string result(msg);
     return result;
 }
 
-void Game::game( string msg)//Object &cube, Object &track,Car &player,Object tree[amount_of_trees], Car &enemy)
+void Game::game( string msg, Car& car)//Object &cube, Object &track,Car &player,Object tree[amount_of_trees], Car &enemy)
 {
+    string *player1 = new string[5];
+
+    player1 = split(msg);
+
+    if (player1[0] == "1")          
+    {
+        car.checkpointReached();
+    }
+
+    float rotation = strtof((player1[1]).c_str(),0);
+    car.setRotation(0,rotation,0);
+
+    vec3 position;
+    position.x = strtof((player1[2]).c_str(),0);
+    position.y = strtof((player1[3]).c_str(),0);
+    position.z = strtof((player1[4]).c_str(),0);
+    car.setPosition(position);
+            
     // enemy.AI();
     // player.checkpointReached();
     // for(int i = 0 ; i < amount_of_trees; i++)   //kolizja z drzewami
@@ -441,5 +474,7 @@ void Game::game( string msg)//Object &cube, Object &track,Car &player,Object tre
     // {
     //     player.setV(-0.75);
     // }
+
+
 }
 

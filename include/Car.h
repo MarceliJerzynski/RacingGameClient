@@ -19,12 +19,14 @@ class Car
 {
     public:
         Car();
-        void loadFromPath(string pathBody,string pathChassis,string pathHeadlit,string pathLicense,string pathWheel, string texPathBody,string texPathChassis,string texPathheadlit,string texPathLicense, string texPathWheel, float apower, float abpower,vec3 aposition,
-            float rotX, float rotY, float rotZ, float ascale);
+        void loadFromPath(string pathBody,string pathChassis,string pathHeadlit,string pathLicense,string pathWheel, 
+                            string texPathBody,string texPathChassis,string texPathheadlit,string texPathLicense, string texPathWheel,
+                            float ascale);
         Object * getBody();
         void setV(float av);
         float getV();
         vec3 getPosition();
+        void setPosition(vec3 aposition);
         float getRotation();
         void setRotation(float rotX, float rotY, float rotZ);
         float getWheelRotation();

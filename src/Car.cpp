@@ -4,36 +4,36 @@ Car::Car()
 {
 }
 
-void Car::loadFromPath(string pathBody,string pathChassis,string pathHeadlit,string pathLicense,string pathWheel, string texPathBody,string texPathChassis,string texPathHeadlit,string texPathLicense, string texPathWheel, float apower, float abpower,vec3 aposition,
-            float rotX, float rotY, float rotZ, float ascale)
+void Car::loadFromPath(string pathBody,string pathChassis,string pathHeadlit,string pathLicense,string pathWheel, string texPathBody,
+                        string texPathChassis,string texPathHeadlit,string texPathLicense, string texPathWheel, float ascale)
 {
 //Ladowanie poszczegolnych obiektow
 //----------------------------------------------------------------------------------------------------------------------
     markup = new Markup();
 
     body=new Object();
-    body->loadFromPath(pathBody,texPathBody,aposition, rotX,rotY,rotZ,ascale);
+    body->loadFromPath(pathBody,texPathBody, ascale);
 
     chassis=new Object();
-    chassis->loadFromPath(pathChassis,texPathChassis,aposition, rotX,rotY,rotZ,ascale);
+    chassis->loadFromPath(pathChassis,texPathChassis, ascale);
 
     headlit=new Object();
-    headlit->loadFromPath(pathHeadlit,texPathHeadlit,aposition, rotX,rotY,rotZ,ascale);
+    headlit->loadFromPath(pathHeadlit,texPathHeadlit, ascale);
 
     license=new Object();
-    license->loadFromPath(pathLicense,texPathLicense,aposition, rotX,rotY,rotZ,ascale);
+    license->loadFromPath(pathLicense,texPathLicense, ascale);
 
     FRW =new Object();
-    FRW->loadFromPath(pathWheel,texPathWheel, aposition, rotX, rotY - 180,rotZ,ascale);
+    FRW->loadFromPath(pathWheel,texPathWheel, ascale);
 
     RLW =new Object();
-    RLW->loadFromPath(pathWheel,texPathWheel, aposition, rotX, rotY,rotZ,ascale);
+    RLW->loadFromPath(pathWheel,texPathWheel, ascale);
 
     RRW =new Object();
-    RRW->loadFromPath(pathWheel,texPathWheel, aposition, rotX, rotY - 180,rotZ,ascale);
+    RRW->loadFromPath(pathWheel,texPathWheel, ascale);
 
     FLW =new Object();
-    FLW->loadFromPath(pathWheel,texPathWheel, aposition, rotX, rotY,rotZ,ascale);
+    FLW->loadFromPath(pathWheel,texPathWheel, ascale);
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -41,14 +41,14 @@ void Car::loadFromPath(string pathBody,string pathChassis,string pathHeadlit,str
 
 //Ustalanie wartosci poczatkowych
 //----------------------------------------------------------------------------------------------------------------------
-    Power = apower;
-    temporaryPower = 0;
-    backPower = abpower;
+    // Power = apower;
+    // temporaryPower = 0;
+    // backPower = abpower;
     v = 0;
     acceleration = 0;
     goForward = false;
     goBackward = false;
-    wheelRotation = rotZ;
+    // c
 //----------------------------------------------------------------------------------------------------------------------
 }
 
@@ -71,6 +71,19 @@ vec3 Car::getPosition()
 {
     return body->getPosition();
 }
+
+void Car::setPosition(vec3 aposition)
+{
+    body->setPosition(aposition);
+    chassis->setPosition(aposition);
+    headlit->setPosition(aposition);
+    license->setPosition(aposition);
+    FRW->setPosition(aposition);
+    RLW->setPosition(aposition);
+    RRW->setPosition(aposition);
+    FLW->setPosition(aposition);
+}
+
 
 void Car::turnLeft()
 {
@@ -257,14 +270,15 @@ Markup * Car::getMarkup()
 
 bool Car::checkpointReached()
 {
-     if ((body->getPosition().x - markup->getPosition().x)*(body->getPosition().x - markup->getPosition().x)
-        + (body->getPosition().z - markup->getPosition().z)*(body->getPosition().z - markup->getPosition().z) <= markup->getRadius()*markup->getRadius()) //znaki w drugim zamienione bo z jest odwrotnie
-    {
-        markup->touched();
-        return true;
-    }
+    //  if ((body->getPosition().x - markup->getPosition().x)*(body->getPosition().x - markup->getPosition().x)
+    //     + (body->getPosition().z - markup->getPosition().z)*(body->getPosition().z - markup->getPosition().z) <= markup->getRadius()*markup->getRadius()) //znaki w drugim zamienione bo z jest odwrotnie
+    // {
+    //     markup->touched();
+    //     return true;
+    // }
 
-    return false;
+    // return false;
+    markup->touched();
 }
 
 void Car::render(mat4 V, mat4 P, ShaderProgram *sp)

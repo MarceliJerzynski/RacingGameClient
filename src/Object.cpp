@@ -23,6 +23,20 @@ void Object::loadFromPath(string path, string texturePath,vec3 aposition, float 
     tex = readTexture(texturePath);
 }
 
+void Object::loadFromPath(string path, string texturePath, float ascale)
+{
+    OBJLoader loader;
+    loader.load(path);
+    //position = aposition;
+    setM(vec3(0,0,0), 0, 0, 0, ascale);
+    verts = loader.getVerts();
+    normals = loader.getNormals();
+    colors = loader.getColors();
+    vertexCount = loader.getVertexCount();
+    tex = readTexture(texturePath);
+}
+
+
 void Object::loadFromLoader(OBJLoader loader, string texturePath,  vec3 aposition, float rotX, float rotY, float rotZ, float ascale)
 {
     position = aposition;

@@ -22,6 +22,7 @@ class Object
         Object();
         float getRadius();
         void loadFromPath(string path, string texturePath, vec3 position, float rotX, float rotY, float rotZ, float scale);
+        voif loadFromPath(string path, string texturePath, float scale);
         void loadFromLoader(OBJLoader loader, string texturePath, vec3 position, float rotX, float rotY, float rotZ, float scale);
         mat4 getM();
         float * getVerts();
