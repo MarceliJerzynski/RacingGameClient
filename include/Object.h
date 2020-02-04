@@ -31,7 +31,7 @@ class Object
         float getRotationY();
         unsigned int getVertexCount();
         vec3 getPosition();
-        void setPosition(vec3 aposition);
+        void setPosition(vec3 &aposition);
         void setRotation(float rotX, float rotY, float rotZ);
         void turn(float rot);
         void move(float dc);

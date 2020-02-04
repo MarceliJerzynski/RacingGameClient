@@ -80,8 +80,10 @@ vec3 Object::getPosition()
 
 }
 
-void Object::setPosition(vec3 aposition)
+void Object::setPosition(vec3 &aposition)
 {
+    //cout<<"setPosition w klasie Object:"<<endl;
+    //cout<<"Position = "<<aposition.x<<" "<<aposition.y<<" "<<aposition.z<<endl;
     setM(aposition, rotationX, rotationY, rotationZ, scaling);
 }
 

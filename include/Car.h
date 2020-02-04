@@ -27,7 +27,7 @@ class Car
         void setV(float av);
         float getV();
         vec3 getPosition();
-        void setPosition(vec3 aposition);
+        void setPosition(vec3 &aposition);
         float getRotation();
         void setRotation(float rotX, float rotY, float rotZ);
         float getWheelRotation();

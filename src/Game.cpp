@@ -1,14 +1,16 @@
 #include "Game.h"
 
 #define DEFAULT_BUFLEN 512
-#define DEFAULT_PORT "50053"
+#define DEFAULT_PORT "50076"
+const char* SERVER_IP = "192.168.43.30";
+
 
 string * split(string text)
 {
     static string result[5];
     istringstream stm(text);
     string word ;
-    //int i = 0;
+
     for(int i = 0; i < 5; i++)
     {
         stm >> word;
@@ -76,7 +78,6 @@ void Game::run(GLFWwindow* window, ShaderProgram *pointer)
                         "img/s3cos.png","img/license.png","img/texWhee1.png",1.0f);
     player.getMarkup()->loadMarkup(0.2);
 
-
     OBJLoader loader;
     loader.load("models/Tree.obj");
 
@@ -97,12 +98,10 @@ void Game::run(GLFWwindow* window, ShaderProgram *pointer)
 
     setCamera(V, player);
 
-    cout<<"Czekam na socket serwera"<<endl;
-    SOCKET socket = getConnectionSocket("192.168.60.30");
-    cout<<"Czekam na indeks z serwera: "<<endl;
+    SOCKET socket = getConnectionSocket(SERVER_IP);
     string index_string = getInfoFromServer(socket); //0 lub 1
     int index = atoi(index_string.c_str()); //0 lub 1
-    cout<<"indeks z serwera to: "<<index<<endl;
+    cout<<"Moj indeks = "<<index<<endl;
 
 //Pêtla g³ówna gry
 //----------------------------------------------------------------------------------------------------------------------
@@ -116,10 +115,10 @@ string msg2;
 		drawScene(window, V, P, cube,track, player, tree, enemy); //Wykonaj procedurê rysuj¹c¹
   //      moving(V, player);
         setCamera(V, player);                                 //wykonaj procedurê odpowiajaj¹ca za poruszanie graczem oraz kamer¹
- //       game(cube,track, player, tree, enemy);               //wykonaj procedurê odpowiedzialn¹ za logikê gry
         sendKeyInfoToServer(socket);
         msg = getInfoFromServer(socket);    //info o player 0
         msg2=getInfoFromServer(socket); //info o player 1
+        cout<<"2 messages arrived"<<endl;
         if (index == 0 )
         {
             //info z msg dotycza player, a z msg2 dotycza enemy
@@ -262,7 +261,7 @@ void Game::moving(mat4 &V,  Car &player)
  //           player.turnRight();   //skrec gracza
             if (angle_around_player < max_angle)    //skrec kamere
             {
-                if ( speed_angle == 0)
+                if ( speed_angle == 0)  //jesli nie naciska V
                 angle_around_player += changing_angle;
             }
             camera_back = false;
@@ -272,7 +271,7 @@ void Game::moving(mat4 &V,  Car &player)
  //           player.turnLeft();
             if ( angle_around_player > -max_angle)  //skrec kamere
             {
-                if ( speed_angle == 0)
+                if ( speed_angle == 0)  //Jesli nie naciska V
                 angle_around_player -=  changing_angle;
             }
         camera_back = false;
@@ -296,39 +295,24 @@ void Game::moving(mat4 &V,  Car &player)
             angle_around_player +=speed_angle;
 
 
-//         if (turnLeft)
-//         {
-// //            player.turnWheelLeft();
-//         }
-//         if (turnRight)
-//         {
-//  //           player.turnWheelRight();
-//         }
-//         if (!turnLeft && !turnRight)  //prostuj ko³a
-//         {
-//             if (player.getWheelRotation() > 0)
-//             {
-//                 player.turnWheelRight();
-//             }
-//             if (player.getWheelRotation() < 0)
-//             {
-//                 player.turnWheelLeft();
-//             }
-//         }
-
-//      if (goPlayer)       //jesli trzyma W
-//     {
-//         player.move(1);  //rusz gracza
-//     } else
-//     if (backPlayer)     //jesli trzyma S
-//     {
-//         player.move(2);
-//     } else
-//     {
-//         player.move(0);
-//     }
-
-
+         if (turnLeft)
+         {
+            player.turnWheelLeft();         }
+         if (turnRight)
+         {
+           player.turnWheelRight();
+         }
+         if (!turnLeft && !turnRight)  //prostuj ko³a
+         {
+             if (player.getWheelRotation() > 0)
+             {
+                 player.turnWheelRight();
+             }
+             if (player.getWheelRotation() < 0)
+             {
+                 player.turnWheelLeft();
+             }
+         }
 
     setCamera(V, player);
 
@@ -409,10 +393,9 @@ void Game::sendKeyInfoToServer(SOCKET ConnectSocket){
     msg = goPlayer ? msg+"goPlayer;":msg;
     msg = backPlayer ? msg+"backPlayer;":msg;
     msg = msg + "\n";
-
-
     int iResult;
     iResult = send( ConnectSocket,msg.c_str(), (int)strlen(msg.c_str()), 0 );
+    cout<<"Message sended: '"<<msg<<"'"<<endl;
 }
 
 
@@ -420,10 +403,22 @@ string Game::getInfoFromServer(SOCKET ConnectSocket){
     char* msg = new char[256];
     char recvbuf;
     recv(ConnectSocket, &recvbuf, 1, 0);
+    if (recv == 0) {
+        cout<<"Server is unavailable"<<endl;
+        cout<<"Press any button to close app"<<endl;
+        system("pause");
+        exit(0);
+    }
     int i = 0;
     msg[i++] = recvbuf;
     while(recvbuf != '\n'){
         recv(ConnectSocket, &recvbuf, 1, 0);
+        if (recv == 0) {
+            cout<<"Server is unavailable"<<endl;
+            cout<<"Press any button to close app"<<endl;
+            system("pause");
+            exit(0);
+        }
         msg[i] = recvbuf;
         i++;
     }
@@ -434,19 +429,21 @@ string Game::getInfoFromServer(SOCKET ConnectSocket){
 
 void Game::game( string msg, Car& car)//Object &cube, Object &track,Car &player,Object tree[amount_of_trees], Car &enemy)
 {
-    string *player1 = new string[5];
+    string *splitted_message = new string[5];
 
-    player1 = split(msg);
-
-    float rotation = strtof((player1[1]).c_str(),0);
-    car.setRotation(0,rotation,0);
+    splitted_message = split(msg);
+    cout<<"Podzielilem wiadomosc"<<endl;
+    float rotation = strtof((splitted_message[1]).c_str(),0);
+    car.setRotation(0,rotation*180.0f/3.14f - 180.0f,0);
 
     vec3 position;
-    position.x = strtof((player1[2]).c_str(),0);
-    position.y = strtof((player1[3]).c_str(),0);
-    position.z = strtof((player1[4]).c_str(),0);
+    position.x = strtof((splitted_message[2]).c_str(),0);
+    position.y = strtof((splitted_message[3]).c_str(),0);
+    position.z = strtof((splitted_message[4]).c_str(),0);
+
     car.setPosition(position);
-    delete[] player1;
+
+    delete[] splitted_message;
     // enemy.AI();
     // player.checkpointReached();
     // for(int i = 0 ; i < amount_of_trees; i++)   //kolizja z drzewami

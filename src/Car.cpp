@@ -72,7 +72,7 @@ vec3 Car::getPosition()
     return body->getPosition();
 }
 
-void Car::setPosition(vec3 aposition)
+void Car::setPosition(vec3 &aposition)
 {
     body->setPosition(aposition);
     chassis->setPosition(aposition);

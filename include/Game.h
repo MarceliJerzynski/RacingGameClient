@@ -36,8 +36,8 @@ using namespace std;
 const  int FPS = 60;
 const  int amount_of_trees = 10;
 const  int amount_of_lights = 4;
-const  float max_angle = 10;
-const  float changing_angle = 0.75;
+const  float max_angle = 90;
+const  float changing_angle = 3;
 const  int enemyCount =4;
 
 class Game
